@@ -1,0 +1,313 @@
+package com.mycompany.car_rental_system;
+
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Date;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+
+public class viewBookingOfCust extends javax.swing.JFrame {
+
+    DefaultTableModel model;
+
+    Connection con;
+    int cus_id;
+
+    public void make_connector() {
+
+        try {
+
+            DriverManager.registerDriver(new org.postgresql.Driver());
+            String info = "jdbc:postgresql://localhost:5432/postgres";
+            con = DriverManager.getConnection(info, "ban", "ban123");
+
+        } catch (Exception ex) {
+            //since we have an error with data base so we must to exit our application 
+            JOptionPane.showMessageDialog(null, "Error Happens With Your Data Base Connection!", "Data Base Error", JOptionPane.ERROR_MESSAGE + JOptionPane.OK_OPTION);
+            System.exit(0);
+        }
+
+    }
+    // Creates new form viewBookingOfCust
+
+    public viewBookingOfCust(int cus_id) {
+
+        initComponents();
+
+        change_label_username(cus_id);
+        model = (DefaultTableModel) this.booking_table.getModel();
+        this.cus_id = cus_id;
+
+        show_bookings_on_table();
+
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        this.setResizable(false);
+    }
+
+    
+    
+        
+    public void change_label_username(int cus_id){
+        
+       
+        make_connector();
+        
+        try {
+
+            // first we need to check if it is the manger , we sure that only we have 1 manger 
+            con.setAutoCommit(false);
+            String q = "Select fname,lname from customer where customerid='"+cus_id+"'";
+            Statement s = con.createStatement();
+            ResultSet r = s.executeQuery(q);
+            //the result will be only 1 row 
+            r.next();
+          
+            
+             this.booking_label.setText( r.getString("fname")+" "+r.getString("lname")+"'s Bookings");
+            
+            con.commit();
+            con.close();
+            con = null;
+            
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error Happens With Your Data Base Connection!", "Data Base Error", JOptionPane.ERROR_MESSAGE + JOptionPane.OK_OPTION);
+            this.dispose();
+        }
+        
+    }
+       
+    
+    
+    
+    public void show_bookings_on_table() {
+
+        make_connector();
+
+        try {
+            String carmodel, color, purpose;
+            Integer car_id, bookingid;
+            Date start, end;
+            int cost;
+
+            con.setAutoCommit(false);
+            String q = "select bookingid,rentalstartdate,rentalreturndate,veichleid,totalcost  from booking where customerid='" + this.cus_id + "' ";
+            //this query will return all the bookings related to customer with id = cus_id
+            Statement s = con.createStatement();
+            ResultSet r = s.executeQuery(q);
+
+            //to fetch the rows 
+            while (r.next() == true) {
+
+                car_id = r.getInt("veichleid");
+                start = r.getDate("rentalstartdate");
+                end = r.getDate("rentalreturndate");
+                cost = r.getInt("totalcost");
+                bookingid = r.getInt("bookingid");
+
+                String q1 = "select model,color,purpose,features from veichle where veichleid='" + car_id + "' ";
+                //this query will return the rented veichle ( 1 row)
+                Statement s1 = con.createStatement();
+                ResultSet r1 = s1.executeQuery(q1);
+
+                r1.next();
+
+                carmodel = r1.getString("model");
+                color = r1.getString("color");
+                purpose = r1.getString("purpose");
+
+                Array array = r1.getArray("features"); // Replace with your array column name
+                String[] items = (String[]) array.getArray();
+                String res = "";
+
+                for (String x : items) {
+                    if (x.equals("null") == false) {
+                        res += x + " ";
+                    }
+
+                }
+
+                //we will show this row to the table
+                model.addRow(new Object[]{bookingid, start, end, carmodel, color, purpose, res, cost});
+
+            }
+
+            con.commit();
+            con.close();
+            con = null;
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, ex.getMessage(), "Data Base Error", JOptionPane.ERROR_MESSAGE + JOptionPane.OK_OPTION);
+            System.exit(0);
+
+        }
+
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        booking_label = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        booking_table = new javax.swing.JTable();
+        goback_btn = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(153, 153, 153));
+
+        jPanel2.setBackground(new java.awt.Color(204, 204, 204));
+
+        booking_label.setFont(new java.awt.Font("Segoe UI", 1, 30)); // NOI18N
+        booking_label.setForeground(new java.awt.Color(255, 255, 255));
+        booking_label.setText("CustomerNAme Recent Booking");
+
+        booking_table.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        booking_table.setForeground(new java.awt.Color(137, 123, 203));
+        booking_table.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Booking ID", "Start Date", "Return Date", "Car Model", "Car Color", "Purpose", "Supported Features", "total Cost"
+            }
+        ));
+        jScrollPane1.setViewportView(booking_table);
+
+        goback_btn.setBackground(new java.awt.Color(82, 140, 197));
+        goback_btn.setFont(new java.awt.Font("Segoe UI", 1, 23)); // NOI18N
+        goback_btn.setForeground(new java.awt.Color(255, 255, 255));
+        goback_btn.setText("Go Back");
+        goback_btn.setFocusable(false);
+        goback_btn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goback_btnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addContainerGap())
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(booking_label, javax.swing.GroupLayout.PREFERRED_SIZE, 524, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(goback_btn))
+                        .addGap(0, 495, Short.MAX_VALUE))))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(booking_label, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addComponent(goback_btn)
+                .addGap(22, 22, 22))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void goback_btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goback_btnActionPerformed
+        // TODO add your handling code here:
+        this.dispose();
+    }//GEN-LAST:event_goback_btnActionPerformed
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(viewBookingOfCust.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(viewBookingOfCust.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(viewBookingOfCust.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(viewBookingOfCust.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                //dummy variable since this form will not be excuted by the main fun but from customer dashboard frame 
+
+                new viewBookingOfCust(0).setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel booking_label;
+    private javax.swing.JTable booking_table;
+    private javax.swing.JButton goback_btn;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    // End of variables declaration//GEN-END:variables
+}
