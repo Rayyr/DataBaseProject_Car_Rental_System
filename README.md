@@ -7,3 +7,9 @@ Diagrams done using Draw.io
 
 System Requirments : https://docs.google.com/document/d/10py88hfU654guuZLlzPrz0ZZKdEfDpaP0iU-VtJpgBU/edit?usp=sharing
 UML classs diagram : https://drive.google.com/file/d/1U2NFl7GYkeckzpPnNfShpv6UsZXX79Jr/view?usp=sharing 
+
+---
+
+### Docs
+https://drive.google.com/drive/folders/1cz8cxu8b3dW0QS-Ju7AUnktCZtA3ThzV?usp=sharing
+
